@@ -1,6 +1,6 @@
 Luyten4Forge 
 ======
-**I am not the creator of Luyten all rights go to the creator!**   
+**I am not the developer of Luyten all rights go to the creator!**   
 
 TODO:   
 Decompiling and GradleForge setup from GUI   
