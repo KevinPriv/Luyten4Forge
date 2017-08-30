@@ -3,13 +3,17 @@ Luyten4Forge
 **I am not the creator of Luyten all rights go to the creator!**   
 
 TODO:   
-Decompiling and Gradlesetup from GUI   
+Decompiling and GradleForge setup from GUI   
+
+Releases:   
+https://github.com/KevinPriv/Luyten4Forge/releases/tag/1.0.1
 
 -To use Luyten4Forge select a mapping from the mappings tab   
 -Drag and Drop a forge mod to decompile   
 
-#Screenshots
-
+## Screenshots
+https://cdn.discordapp.com/attachments/248159333110644736/352536507992637441/1.png
+https://cdn.discordapp.com/attachments/248159333110644736/352536523524145152/2.png
 
 About Luyten
 ======
