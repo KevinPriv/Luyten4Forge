@@ -1,6 +1,6 @@
 package us.deathmarine.luyten;
 
-import com.kbrewster.mc.Decompile;
+import com.kbrewster.mc.ExtractMappings;
 
 import java.awt.Cursor;
 import java.awt.Desktop;
@@ -47,7 +47,7 @@ public class Luyten {
 
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			new Thread(new Decompile()).start();
+			new Thread(new ExtractMappings()).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

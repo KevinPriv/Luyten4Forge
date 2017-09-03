@@ -30,7 +30,7 @@ import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
 
-import com.kbrewster.mc.Decompile;
+import com.kbrewster.mc.ExtractMappings;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 /**
@@ -111,7 +111,7 @@ public class MainWindow extends JFrame {
 		spt.setPreferredSize(new Dimension(this.getWidth(), 24));
 		this.add(spt, BorderLayout.SOUTH);
 		if (fileFromCommandLine != null) {
-			Decompile.currentFile = fileFromCommandLine;
+			ExtractMappings.currentFile = fileFromCommandLine;
 			model.loadFile(fileFromCommandLine);
 		}
 
@@ -138,7 +138,7 @@ public class MainWindow extends JFrame {
 
 	public void onOpenFileMenu() {
 		File selectedFile = fileDialog.doOpenDialog();
-		Decompile.currentFile = selectedFile;
+		ExtractMappings.currentFile = selectedFile;
 		if (selectedFile != null) {
 			System.out.println("[Open]: Opening" + selectedFile.getAbsolutePath() + "...");
 			
@@ -185,6 +185,29 @@ public class MainWindow extends JFrame {
 		}
 	}
 
+	public void onSaveAllMenuForge() {
+		File openedFile = this.getModel().getOpenedFile();
+		if (openedFile == null)
+			return;
+
+		if(ExtractMappings.currentMapping == null) {
+			label.setText("Mapping is null" );
+			return;
+		}
+		String fileName = openedFile.getName();
+		if (fileName.endsWith(".class")) {
+			fileName = fileName.replace(".class", ".java");
+		} else if (fileName.toLowerCase().endsWith(".jar")) {
+			fileName = ExtractMappings.currentMapping + "-" + fileName.replaceAll("\\.[jJ][aA][rR]", ".zip");
+		} else {
+			fileName = "saved-" + fileName;
+		}
+
+		File selectedFileToSave = fileDialog.doSaveAllDialog(fileName);
+		if (selectedFileToSave != null) {
+			fileSaver.saveAllForgeDir(openedFile, selectedFileToSave);
+		}
+	}
 	public void onExitMenu() {
 		quit();
 	}
@@ -312,7 +335,7 @@ public class MainWindow extends JFrame {
 
 	public void onFileDropped(File file) {
 		if (file != null) {
-			Decompile.currentFile = file;
+			ExtractMappings.currentFile = file;
 			this.getModel().loadFile(file);
 		}
 	}

@@ -1,9 +1,6 @@
 package com.kbrewster.mc;
 
-import com.sun.org.apache.xpath.internal.SourceTree;
 import us.deathmarine.luyten.Luyten;
-import us.deathmarine.luyten.MainWindow;
-import us.deathmarine.luyten.RecentFiles;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,9 +11,10 @@ import java.util.TreeMap;
 
 /**
  * Bad naming convention as its nothing to do with Decompiling but i cba to rename
+ * Why do i even need the annotation tbh lol??
  */
-@Metadata(name = "Luyten4Forge", version = 1.0)
-public class Decompile implements Runnable {
+@Metadata(name = "Luyten4Forge", version = 1.2)
+public class ExtractMappings extends Extracter implements Runnable {
 
     /**
      * Stores all the old mappings and what to replace it with
@@ -26,7 +24,7 @@ public class Decompile implements Runnable {
     /**
      * Cant use enums because they're numbers ._. so heartbreaking
      */
-    public static String versions[] = {"1.7.10", "1.8", "1.8.9", "1.9", "1.10.2", "1.11"};
+    public static String versions[] = {"1.7.10", "1.8", "1.8.9", "1.9", "1.10.2", "1.11", "1.12.1"};
 
     public static String currentMapping = null;
     public static File currentFile;
@@ -71,42 +69,11 @@ public class Decompile implements Runnable {
     }
 
     /**
-     * Gave the up on the trying to get the directory of the mappings, it was painful ;(
-     * https://stackoverflow.com/questions/14089146/file-loading-by-getclass-getresource
-     * @param resourcePath
-     * @return
-     */
-    public static File getResourceAsFile(String resourcePath) {
-        try {
-            InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(resourcePath);
-            if (in == null) {
-                return null;
-            }
-
-            File tempFile = File.createTempFile(String.valueOf(in.hashCode()), ".tmp");
-            tempFile.deleteOnExit();
-
-            try (FileOutputStream out = new FileOutputStream(tempFile)) {
-                //copy stream
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, bytesRead);
-                }
-            }
-            return tempFile;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
      * Reloads mapping
      * @param mappings the version
      */
     public static void reloadMappings(String mappings) {
         currentMapping = mappings;
-        new Thread(new Decompile()).start();
+        new Thread(new ExtractMappings()).start();
     }
 }

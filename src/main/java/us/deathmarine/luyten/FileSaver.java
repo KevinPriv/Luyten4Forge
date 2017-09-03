@@ -4,15 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +20,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
+import com.kbrewster.mc.ExtractGradleForge;
+import com.kbrewster.mc.ExtractMappings;
 import com.strobel.assembler.metadata.ITypeLoader;
 import com.strobel.assembler.metadata.JarTypeLoader;
 import com.strobel.assembler.metadata.MetadataSystem;
@@ -133,6 +127,146 @@ public class FileSaver {
 		}).start();
 	}
 
+	public void saveAllForgeDir(final File inFile, final File outFile) {
+		ExtractGradleForge forge = new ExtractGradleForge();
+		new Thread(() -> {
+            long time = System.currentTimeMillis();
+            try {
+                bar.setVisible(true);
+                setExtracting(true);
+                label.setText("Extracting: " + outFile.getName());
+                System.out.println("[SaveAll]: " + inFile.getName() + " -> " + outFile.getName());
+                String inFileName = inFile.getName().toLowerCase();
+
+                if (inFileName.endsWith(".jar") || inFileName.endsWith(".zip")) {
+					doSaveForgeJarDecompiled(inFile, outFile);
+                } else if (inFileName.endsWith(".class")) {
+                    doSaveClassDecompiled(inFile, outFile);
+                } else {
+                    doSaveUnknownFile(inFile, outFile);
+                }
+                if (cancel) {
+                    label.setText("Cancelled");
+                    outFile.delete();
+                    setCancel(false);
+                } else {
+                    label.setText("Completed: " + getTime(time));
+                }
+            } catch (Exception e1) {
+                label.setText("Cannot save file: " + outFile.getName());
+                Luyten.showExceptionDialog("Unable to save file!\n", e1);
+            } finally {
+                setExtracting(false);
+                bar.setVisible(false);
+            }
+			try {
+				forge.extract(ExtractMappings.currentMapping, outFile.getAbsolutePath(), outFile.getParent() + "/" + outFile.getName().replace(".zip", ""));
+			} catch (IOException e) {
+				label.setText("Cannot save file: " + outFile.getName());
+				Luyten.showExceptionDialog("Unable to save file!\n", e);
+			}
+		}).start();
+	}
+
+	private void doSaveForgeJarDecompiled(File inFile, File outFile) throws Exception {
+		try (JarFile jfile = new JarFile(inFile);
+			 FileOutputStream dest = new FileOutputStream(outFile);
+			 BufferedOutputStream buffDest = new BufferedOutputStream(dest);
+			 ZipOutputStream out = new ZipOutputStream(buffDest);) {
+			bar.setMinimum(0);
+			bar.setMaximum(jfile.size());
+			byte data[] = new byte[1024];
+			DecompilerSettings settings = cloneSettings();
+			LuytenTypeLoader typeLoader = new LuytenTypeLoader();
+			MetadataSystem metadataSystem = new MetadataSystem(typeLoader);
+			ITypeLoader jarLoader = new JarTypeLoader(jfile);
+			typeLoader.getTypeLoaders().add(jarLoader);
+
+			DecompilationOptions decompilationOptions = new DecompilationOptions();
+			decompilationOptions.setSettings(settings);
+			decompilationOptions.setFullDecompilation(true);
+
+			List<String> mass = null;
+			JarEntryFilter jarEntryFilter = new JarEntryFilter(jfile);
+			LuytenPreferences luytenPrefs = ConfigSaver.getLoadedInstance().getLuytenPreferences();
+			if (luytenPrefs.isFilterOutInnerClassEntries()) {
+				mass = jarEntryFilter.getEntriesWithoutInnerClasses();
+			} else {
+				mass = jarEntryFilter.getAllEntriesFromJar();
+			}
+
+			Enumeration<JarEntry> ent = jfile.entries();
+			Set<String> history = new HashSet<String>();
+			int tick = 0;
+			while (ent.hasMoreElements() && !cancel) {
+				bar.setValue(++tick);
+				JarEntry entry = ent.nextElement();
+				if (!mass.contains(entry.getName()))
+					continue;
+				label.setText("Extracting: " + entry.getName());
+				bar.setVisible(true);
+				if (entry.getName().endsWith(".class")) {
+					JarEntry etn = new JarEntry(entry.getName().replace(".class", ".java"));
+					label.setText("Extracting: " + etn.getName());
+					System.out.println("[SaveAll]: " + etn.getName() + " -> " + outFile.getName());
+
+					if (history.add(etn.getName())) {
+						out.putNextEntry(etn);
+						try {
+							boolean isUnicodeEnabled = decompilationOptions.getSettings().isUnicodeOutputEnabled();
+							String internalName = StringUtilities.removeRight(entry.getName(), ".class");
+							TypeReference type = metadataSystem.lookupType(internalName);
+							TypeDefinition resolvedType = null;
+							if ((type == null) || ((resolvedType = type.resolve()) == null)) {
+								throw new Exception("Unable to resolve type.");
+							}
+
+							Writer writer = isUnicodeEnabled ? new OutputStreamWriter(out, "UTF-8")
+									: new OutputStreamWriter(out);
+							PlainTextOutput plainTextOutput = new PlainTextOutput(writer);;
+							plainTextOutput.setUnicodeOutputEnabled(isUnicodeEnabled);
+							settings.getLanguage().decompileType(resolvedType, plainTextOutput, decompilationOptions);
+							writer.flush();
+						} catch (Exception e) {
+							label.setText("Cannot decompile file: " + entry.getName());
+							Luyten.showExceptionDialog("Unable to ExtractMappings file!\nSkipping file...", e);
+						} finally {
+							out.closeEntry();
+						}
+					}
+				} else {
+					try {
+						JarEntry etn = new JarEntry(entry.getName());
+						if (entry.getName().endsWith(".java"))
+							etn = new JarEntry(entry.getName().replace(".java", ".src.java"));
+						if (history.add(etn.getName())) {
+							out.putNextEntry(etn);
+							try {
+								InputStream in = jfile.getInputStream(etn);
+								if (in != null) {
+									try {
+										int count;
+										while ((count = in.read(data, 0, 1024)) != -1) {
+											out.write(data, 0, count);
+										}
+									} finally {
+										in.close();
+									}
+								}
+							} finally {
+								out.closeEntry();
+							}
+						}
+					} catch (ZipException ze) {
+						if (!ze.getMessage().contains("duplicate")) {
+							throw ze;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	private void doSaveJarDecompiled(File inFile, File outFile) throws Exception {
 		try (JarFile jfile = new JarFile(inFile);
 				FileOutputStream dest = new FileOutputStream(outFile);
@@ -193,7 +327,7 @@ public class FileSaver {
 							writer.flush();
 						} catch (Exception e) {
 							label.setText("Cannot decompile file: " + entry.getName());
-							Luyten.showExceptionDialog("Unable to Decompile file!\nSkipping file...", e);
+							Luyten.showExceptionDialog("Unable to ExtractMappings file!\nSkipping file...", e);
 						} finally {
 							out.closeEntry();
 						}

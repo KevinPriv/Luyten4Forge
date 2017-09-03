@@ -10,7 +10,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
@@ -21,7 +20,7 @@ import java.util.Map;
 import javax.swing.*;
 import javax.swing.text.DefaultEditorKit;
 
-import com.kbrewster.mc.Decompile;
+import com.kbrewster.mc.ExtractMappings;
 import com.strobel.Procyon;
 import com.strobel.decompiler.DecompilerSettings;
 import com.strobel.decompiler.languages.Language;
@@ -162,7 +161,7 @@ public class MainMenuBar extends JMenuBar {
 			menuItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					Decompile.currentFile = file;
+					ExtractMappings.currentFile = file;
 					mainWindow.getModel().loadFile(file);
 				}
 			});
@@ -222,6 +221,18 @@ public class MainMenuBar extends JMenuBar {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				mainWindow.onSaveAllMenu();
+			}
+		});
+		fileMenu.add(menuItem);
+		fileMenu.addSeparator();
+
+		menuItem = new JMenuItem("Save with Forge workspace...");
+		menuItem.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_E, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				mainWindow.onSaveAllMenuForge();
 			}
 		});
 		fileMenu.add(menuItem);
@@ -377,50 +388,50 @@ public class MainMenuBar extends JMenuBar {
 		versionGroup = new ButtonGroup();
 		JRadioButtonMenuItem a = new JRadioButtonMenuItem("1.7.10");
 		a.addActionListener(e -> {
-			Decompile.reloadMappings("1.7.10");
+			ExtractMappings.reloadMappings("1.7.10");
 		});
 		versionGroup.add(a);
 		versionMenu.add(a);
 		a = new JRadioButtonMenuItem("1.8");
 		a.addActionListener(e -> {
-			Decompile.reloadMappings("1.8");
+			ExtractMappings.reloadMappings("1.8");
 		});
 		versionGroup.add(a);
 		versionMenu.add(a);
 		a = new JRadioButtonMenuItem("1.8.9");
 		a.addActionListener(e -> {
-			Decompile.reloadMappings("1.8.9");
+			ExtractMappings.reloadMappings("1.8.9");
 		});
 		versionGroup.add(a);
 		versionMenu.add(a);
 		a = new JRadioButtonMenuItem("1.9");
 		a.addActionListener(e -> {
-			Decompile.reloadMappings("1.9");
+			ExtractMappings.reloadMappings("1.9");
 		});
 		versionGroup.add(a);
 		versionMenu.add(a);
 		a = new JRadioButtonMenuItem("1.10.2");
 		a.addActionListener(e -> {
-			Decompile.reloadMappings("1.10.2");
+			ExtractMappings.reloadMappings("1.10.2");
 		});
 		versionGroup.add(a);
 		versionMenu.add(a);
-		a = new JRadioButtonMenuItem("1.11.1");
+		a = new JRadioButtonMenuItem("1.11");
 		a.addActionListener(e -> {
-			Decompile.reloadMappings("1.11.1");
+			ExtractMappings.reloadMappings("1.11");
 		});
 		versionGroup.add(a);
 		versionMenu.add(a);
-		a = new JRadioButtonMenuItem("1.12");
+		a = new JRadioButtonMenuItem("1.12.1");
 		a.addActionListener(e -> {
-			Decompile.reloadMappings("1.12");
+			ExtractMappings.reloadMappings("1.12.1");
 		});
 		versionGroup.add(a);
 		versionMenu.add(a);
 		a = new JRadioButtonMenuItem("None");
 		a.setEnabled(true);
 		a.addActionListener(e -> {
-			Decompile.reloadMappings(null);
+			ExtractMappings.reloadMappings(null);
 		});
 		versionGroup.add(a);
 		versionMenu.add(a);

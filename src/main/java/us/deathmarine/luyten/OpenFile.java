@@ -33,7 +33,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 
-import com.kbrewster.mc.Decompile;
+import com.kbrewster.mc.ExtractMappings;
 import org.fife.ui.rsyntaxtextarea.LinkGenerator;
 import org.fife.ui.rsyntaxtextarea.LinkGeneratorResult;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -476,8 +476,8 @@ public class OpenFile implements SyntaxConstants {
 
 	private void setContentPreserveLastScrollPosition(String content) {
 		if(content.contains("net.minecraft")) {
-			for(String key:Decompile.mappings.keySet()) {
-				content = content.replaceAll(key, Decompile.mappings.get(key));
+			for(String key: ExtractMappings.mappings.keySet()) {
+				content = content.replaceAll(key, ExtractMappings.mappings.get(key));
 			}
 		}
 		final String newContent = content;
