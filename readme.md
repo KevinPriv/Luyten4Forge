@@ -2,19 +2,16 @@ Luyten4Forge
 ======
 **I am not the developer of Luyten all rights go to the creator!**   
 
-TODO:   
-Decompiling and GradleForge setup from GUI   
-
 Releases:   
 https://github.com/KevinPriv/Luyten4Forge/releases/
 
 -To use Luyten4Forge select a mapping from the mappings tab   
--Drag and Drop a forge mod to decompile   
--Home>Save with Forge-workspace to extract the source with a workspace (Must choose a mapping first)  
+-Drag and Drop a forge mod to decompile   
+-Home>Save with Forge-workspace to extract the source with a workspace (Must choose a mapping first)  -Mapp
 ## Screenshots
 https://cdn.discordapp.com/attachments/248159333110644736/352536507992637441/1.png
 https://cdn.discordapp.com/attachments/248159333110644736/352536523524145152/2.png
-
+*****
 
 
 
@@ -25,8 +22,7 @@ About Luyten
 Java Decompiler Gui for Procyon  
 Apache License, Version 2.0  
 https://github.com/deathmarine/Luyten
-## Compilation
-*****
+## Compilation     
 
 We use maven to handle our dependencies.
 
